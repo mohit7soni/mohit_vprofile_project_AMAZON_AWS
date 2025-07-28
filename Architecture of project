@@ -1,0 +1,76 @@
+
+
+
+🔧 1. DNS Zones (Public - GoDaddy)
+GoDaddy is used to purchase and manage the domain name (e.g., www.yourdomain.com).
+
+It maps the domain to the Application Load Balancer (ALB)'s endpoint using DNS.
+
+👥 2. Users
+End users access the application via HTTPS (https://yourdomain.com).
+
+Requests are securely routed over SSL/TLS.
+
+⚖️ 3. Application Load Balancer (ALB)
+Receives HTTPS traffic from users.
+
+Associated with a Security Group that allows traffic on port 443 (HTTPS).
+
+It forwards the traffic internally to the Tomcat application servers on port 8080 (HTTP).
+
+🚀 4. Auto Scaling Group of Tomcat Instances
+These EC2 instances are running Tomcat, where your web application is deployed.
+
+Auto Scaling ensures high availability and scalability by adjusting the number of instances based on traffic.
+
+Protected by a Security Group to allow incoming traffic only from the ALB (on port 8080).
+
+🛡️ 5. Application Layer Security Groups
+Security groups are used at different layers to control inbound and outbound traffic for:
+
+ALB
+
+Tomcat Instances
+
+Backend Services (MySQL, RabbitMQ, Memcached)
+
+🧠 6. Backend Layer
+a. MySQL
+Stores relational data (e.g., user details, transactions).
+
+Tomcat connects to MySQL to perform DB operations.
+
+b. RabbitMQ
+A message broker used for asynchronous communication between services (e.g., task queues, notifications).
+
+Tomcat can publish tasks to RabbitMQ for background processing.
+
+c. Memcached
+In-memory caching layer to reduce database load and increase performance.
+
+Used to store session data or frequently accessed queries.
+
+All these are protected within their own Security Group, which restricts access only to the necessary components.
+
+🌐 7. Amazon Route 53 (Private Hosted Zone)
+Private DNS zones allow internal name resolution within the VPC.
+
+Used for backend communication:
+
+db01 resolves to MySQL IP
+
+mc01 resolves to Memcached IP
+
+rmq01 resolves to RabbitMQ IP
+
+This avoids hardcoding IP addresses and improves maintainability.
+
+📦 Summary of Flow:
+rust
+Copy
+Edit
+User (HTTPS) --> GoDaddy (DNS) --> Application Load Balancer (HTTPS) --> Tomcat (8080)
+    |
+    |--> MySQL (db01)
+    |--> RabbitMQ (rmq01)
+    |--> Memcached (mc01)
